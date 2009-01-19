@@ -21,7 +21,6 @@ __PACKAGE__->_Config(
 my $initialized;
 my $tile_available;
 
-
 #-------------------------------------------------------------------------------
 # Subroutine : _ClassInit
 # Purpose    : Perform class initialization.
@@ -30,6 +29,7 @@ my $tile_available;
 sub _ClassInit {
 	# determine availability of themed widgets
 	$tile_available = eval { Tkx::package_require('tile') };
+	$initialized++;
 }
 
 
@@ -48,7 +48,6 @@ sub _Populate {
 		@_,
 	);
 
-	# This doesn't get called automatically. Don't know who's to blame.
 	_ClassInit() unless $initialized;
 
 	# Create the megawidget
@@ -114,39 +113,52 @@ __END__
 
 =head1 NAME
 
-Tkx::Scrolled - The great new Tkx::Scrolled!
+Tkx::Scrolled - Tkx megawidget for scrolled widgets
 
 =head1 SYNOPSIS
 
-Quick summary of what the module does.
-
-Perhaps a little code snippet.
-
     use Tkx::Scrolled;
 
-    my $foo = Tkx::Scrolled->new();
-    ...
+    my $text = $mw->new_tkx_Scrolled('text');
 
-=head1 EXPORT
+=head1 DESCRIPTION
 
-A list of functions that can be exported.  You can delete this section
-if you don't export anything, such as for a purely object-oriented module.
+Tkx::Scrolled is a Tkx megawidget that simplifies that task of adding scrollbars 
+to your widgets.
 
-=head1 FUNCTIONS
+=head1 OPTIONS
 
-(use this section for functional modules)
+The options below are for the Tkx::Scrolled megawidget. All other options are 
+passed through to the constructor for the scrolled subwidget.
 
-=head2 function1
+=head2 -tile
 
-=head2 function2
+Use tiled (ttk) scrollbars if available. Defaults to 1.
+
+=head1 SUBWIDGETS
+
+=head2 scrolled
+
+The scrolled widget.
+
+=head2 xscrollbar
+
+The scrollbar widget used for horizontal scrolling.
+
+=head2 yscrollbar
+
+The scrollbar widget used for vertical scrolling.
 
 =head1 METHODS
 
-(use this section for object-oriented modules)
+None. All method calls are delgated to the scrolled subwidget. This means that 
+you don't need to access the subwidget directly and can make existing widgets 
+scrolled without needing to change any of the code that references them.
 
-=head2 method1
-
-=head2 method2
+Method delgation to other megawidgets (e.g. Tkx::ROText) only works with Tkx 
+version 1.06 or greater and only if the embedded megawidget's method names 
+include the 'm_' prefix. If you can't rely on this you'll have to fall back
+to the C<< $w->_kid('scrolled')->method(...) >> syntax.
 
 =head1 AUTHOR
 
@@ -154,19 +166,17 @@ Michael J. Carman, C<< <mjcarman at cpan.org> >>
 
 =head1 BUGS
 
-Please report any bugs or feature requests to C<bug-tkx-scrolled at rt.cpan.org>, or through
-the web interface at L<http://rt.cpan.org/NoAuth/ReportBug.html?Queue=Tkx-Scrolled>.  I will be notified, and then you'll
-automatically be notified of progress on your bug as I make changes.
-
-
-
+Please report any bugs or feature requests to C<bug-tkx-scrolled at 
+rt.cpan.org>, or through the web interface at 
+L<http://rt.cpan.org/NoAuth/ReportBug.html?Queue=Tkx-Scrolled>.  I will be 
+notified, and then you'll automatically be notified of progress on your bug as I 
+make changes.
 
 =head1 SUPPORT
 
 You can find documentation for this module with the perldoc command.
 
     perldoc Tkx::Scrolled
-
 
 You can also look for information at:
 
@@ -190,9 +200,7 @@ L<http://search.cpan.org/dist/Tkx-Scrolled>
 
 =back
 
-
 =head1 ACKNOWLEDGEMENTS
-
 
 =head1 COPYRIGHT & LICENSE
 
@@ -200,6 +208,5 @@ Copyright 2009 Michael J. Carman, all rights reserved.
 
 This program is free software; you can redistribute it and/or modify it
 under the same terms as Perl itself.
-
 
 =cut
