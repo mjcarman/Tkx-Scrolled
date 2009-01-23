@@ -35,7 +35,7 @@ sub _ClassInit {
 
 #-------------------------------------------------------------------------------
 # Method  : _Populate
-# Purpose : Create a new Tkx::ROText widget
+# Purpose : Create a new Tkx::Scrolled widget
 # Notes   : 
 #-------------------------------------------------------------------------------
 sub _Populate {
@@ -52,8 +52,8 @@ sub _Populate {
 
 	# Create the megawidget
 	my $self = ($tile_available && $opt{-tile})
-		? $class->new($path)->_parent->new_ttk__frame(-name => $path)
-		: $class->new($path)->_parent->new_frame(-name => $path);
+		? $class->new($path)->_parent->new_ttk__frame(-name => $path, -class => 'Tkx_Scrolled')
+		: $class->new($path)->_parent->new_frame(-name => $path, -class => 'Tkx_Scrolled');
 	$self->_class($class);
 
 	# Delete megawidget options so that we can safely pass the remaining
