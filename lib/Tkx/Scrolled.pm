@@ -65,8 +65,13 @@ sub _Populate {
 	my $x = $self->_scrollbar(-name => 'xscrollbar', -orient => 'horizontal');
 	my $y = $self->_scrollbar(-name => 'yscrollbar', -orient => 'vertical');
 
-	$x->configure(-command        => [$w, 'xview']);
-	$y->configure(-command        => [$w, 'yview']);
+	# If the scrolled widget is a megawidget (e.g. Tkx::ROText) any method
+	# delegation it does won't work because the scrollbar widgets operate in
+	# Tcl/Tk; they are oblivious to the Perl layer above it. We use _mpath()
+	# to resolve any delegation now and provide the Tcl pathname of the
+	# delegate for use by the scrollbars.
+	$x->configure(-command        => [$w->_mpath('xview'), 'xview']);
+	$y->configure(-command        => [$w->_mpath('yview'), 'yview']);
 	$w->configure(-xscrollcommand => [$x, 'set'  ]);
 	$w->configure(-yscrollcommand => [$y, 'set'  ]);
 
