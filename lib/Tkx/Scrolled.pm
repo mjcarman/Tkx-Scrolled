@@ -7,10 +7,11 @@ BEGIN {require 5.006}
 use strict;
 use warnings;
 
+use Carp qw(croak);
 use Tkx;
 use base qw(Tkx::widget Tkx::MegaConfig);
 
-our $VERSION = '0.01';
+our $VERSION = '0.02';
 
 __PACKAGE__->_Mega('tkx_Scrolled');
 
@@ -20,6 +21,12 @@ __PACKAGE__->_Config(
 
 my $initialized;
 my $tile_available;
+
+# regular expression for validation of -scrollbars argument
+my $valid_scrollbar_position = qr/
+	(?:^[ns]?[ew]?$)  # normal directions: n, s, e, w, ne, nw, se, sw
+	|(?:^[ew][ns]$)   # unusual variants: en, es, wn, ws
+/xi;
 
 #-------------------------------------------------------------------------------
 # Subroutine : _ClassInit
@@ -44,13 +51,14 @@ sub _Populate {
 	my $path   = shift;
 	my $type   = shift;
 	my %opt    = (
-		-tile => 1,
+		-tile       => 1,
+		-scrollbars => 'se',
 		@_,
 	);
 
 	_ClassInit() unless $initialized;
 
-	# Create the megawidget
+	# Create the megawidget.
 	my $self = ($tile_available && $opt{-tile})
 		? $class->new($path)->_parent->new_ttk__frame(-name => $path, -class => 'Tkx_Scrolled')
 		: $class->new($path)->_parent->new_frame(-name => $path, -class => 'Tkx_Scrolled');
@@ -58,31 +66,48 @@ sub _Populate {
 
 	# Delete megawidget options so that we can safely pass the remaining
 	# ones through to the scrolled subwidget.
-	$self->_data->{-tile} = delete $opt{-tile};
+	$self->_data->{-tile}       = delete $opt{-tile};
+	$self->_data->{-scrollbars} = delete $opt{-scrollbars};
 
+	# Validate requested scrollbar positions.
+	unless ($self->_data->{-scrollbars} =~ $valid_scrollbar_position) {
+		croak("Invalid value for option '-scrollbars', must be n, s, e, w or a combination");
+	}
+
+	# Create the widgets.
 	my $new_thing = "new_$type";
 	my $w = $self->$new_thing(-name => 'scrolled',   %opt);
 	my $x = $self->_scrollbar(-name => 'xscrollbar', -orient => 'horizontal');
 	my $y = $self->_scrollbar(-name => 'yscrollbar', -orient => 'vertical');
 
-	# If the scrolled widget is a megawidget (e.g. Tkx::ROText) any method
-	# delegation it does won't work because the scrollbar widgets operate in
-	# Tcl/Tk; they are oblivious to the Perl layer above it. We use _mpath()
-	# to resolve any delegation now and provide the Tcl pathname of the
-	# delegate for use by the scrollbars.
+	# Create widget bindings. If the scrolled widget is a megawidget (e.g.
+	# Tkx::ROText) any method delegation it does won't work because the
+	# scrollbar widgets operate in Tcl/Tk; they are oblivious to the Perl layer
+	# above it. We use _mpath() to resolve any delegation now and provide the
+	# Tcl pathname of the delegate for use by the scrollbars.
 	$x->configure(-command        => [$w->_mpath('xview'), 'xview']);
 	$y->configure(-command        => [$w->_mpath('yview'), 'yview']);
-	$w->configure(-xscrollcommand => [$x, 'set'  ]);
-	$w->configure(-yscrollcommand => [$y, 'set'  ]);
+	$w->configure(-xscrollcommand => [$x, 'set']);
+	$w->configure(-yscrollcommand => [$y, 'set']);
 
-	# Use grid to pack widget and scrollbars leaving cell 1,1 empty.
-	# This keeps the ends of the scrollbars from overlapping.
-	$w->g_grid(-row => 0, -column => 0, -sticky => 'nsew');
-	$y->g_grid(-row => 0, -column => 1, -sticky => 'ns'  );
-	$x->g_grid(-row => 1, -column => 0, -sticky => 'ew'  );
+	# Determine the placement of the scrollbars. The corner between the
+	# scrollbars is left empty; this keeps the ends of the scrollbars from
+	# overlapping.
+	my ($r, $c);
+	for ($self->_data->{-scrollbars}) {
+		/n/ && do { $r = 0 };
+		/s/ && do { $r = 2 };
+		/e/ && do { $c = 2 };
+		/w/ && do { $c = 0 };
+	}
 
-	Tkx::grid('columnconfigure', $self, 0, '-weight', 1);
-	Tkx::grid('rowconfigure',    $self, 0, '-weight', 1);
+	# Layout the widgets
+	$w->g_grid(-row => 1,  -column => 1,  -sticky => 'nsew');
+	$x->g_grid(-row => $r, -column => 1,  -sticky => 'ew'  ) if defined $r;
+	$y->g_grid(-row => 1,  -column => $c, -sticky => 'ns'  ) if defined $c;
+
+	Tkx::grid('columnconfigure', $self, 1, '-weight', 1);
+	Tkx::grid('rowconfigure',    $self, 1, '-weight', 1);
 
 	return $self;
 }
@@ -122,9 +147,9 @@ Tkx::Scrolled - Tkx megawidget for scrolled widgets
 
 =head1 SYNOPSIS
 
-    use Tkx::Scrolled;
+	use Tkx::Scrolled;
 
-    my $text = $mw->new_tkx_Scrolled('text');
+	my $text = $mw->new_tkx_Scrolled('text');
 
 =head1 DESCRIPTION
 
@@ -135,6 +160,11 @@ to your widgets.
 
 The options below are for the Tkx::Scrolled megawidget. All other options are 
 passed through to the constructor for the scrolled subwidget.
+
+=head2 -scrollbars
+
+Where the scrollbars should be drawn relative to the scrolled widget: 
+C<n>, C<s>, C<e>, C<w> or a combination of them. The default value is C<se>.
 
 =head2 -tile
 
@@ -181,7 +211,7 @@ make changes.
 
 You can find documentation for this module with the perldoc command.
 
-    perldoc Tkx::Scrolled
+	perldoc Tkx::Scrolled
 
 You can also look for information at:
 

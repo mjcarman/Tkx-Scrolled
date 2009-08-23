@@ -16,7 +16,10 @@ my $mw = Tkx::widget->new('.');
 $mw->g_wm_title('Scrolled Test');
 
 #my $text    = $mw->new_tkx_Scrolled('text', -wrap => 'word');
-my $text    = $mw->new_tkx_Scrolled('tkx_ROText', -wrap => 'word');
+my $text    = $mw->new_tkx_Scrolled('tkx_ROText',
+#	-scrollbars => 'ne',
+	-wrap       => 'word',
+);
 my $findbar = $mw->new_tkx_FindBar(-textwidget => $text);
 
 $findbar->add_bindings($mw,

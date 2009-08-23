@@ -1,4 +1,8 @@
 Revision history for Tkx-Scrolled
 
+0.02  (2009-08-23)
+    - Added -scrollbars option to control placement of scrollbars relative to
+      the scrolled widget.
+
 0.01  (2009-08-21)
     - First version, released on an unsuspecting world.
