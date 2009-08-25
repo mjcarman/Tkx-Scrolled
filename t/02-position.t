@@ -1,7 +1,7 @@
 #!perl -T
 use strict;
 use warnings;
-use Test::More tests => 16;
+use Test::More tests => 22;
 use Tkx;
 use Tkx::Scrolled;
 
@@ -25,6 +25,12 @@ my @positions = (
 	[ws   => 1],
 	[nne  => 0],
 	[swen => 0],
+	[on   => 1],
+	[ow   => 1],
+	[one  => 1],
+	[now  => 1],
+	[osoe => 1],
+	[oos  => 0],
 );
 
 foreach my $p (@positions) {

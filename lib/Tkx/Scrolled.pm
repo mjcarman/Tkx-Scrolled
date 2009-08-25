@@ -11,7 +11,7 @@ use Carp qw(croak);
 use Tkx;
 use base qw(Tkx::widget Tkx::MegaConfig);
 
-our $VERSION = '0.02';
+our $VERSION = '0.03';
 
 __PACKAGE__->_Mega('tkx_Scrolled');
 
@@ -24,8 +24,8 @@ my $tile_available;
 
 # regular expression for validation of -scrollbars argument
 my $valid_scrollbar_position = qr/
-	(?:^[ns]?[ew]?$)  # normal directions: n, s, e, w, ne, nw, se, sw
-	|(?:^[ew][ns]$)   # unusual variants: en, es, wn, ws
+	(?:^o?[ns]?o?[ew]?$)  # normal directions: n, s, e, w, ne, nw, se, sw
+	|(?:^o?[ew]o?[ns]$)   # unusual variants: en, es, wn, ws
 /xi;
 
 #-------------------------------------------------------------------------------
@@ -63,14 +63,20 @@ sub _Populate {
 		? $class->new($path)->_parent->new_ttk__frame(-name => $path, -class => 'Tkx_Scrolled')
 		: $class->new($path)->_parent->new_frame(-name => $path, -class => 'Tkx_Scrolled');
 	$self->_class($class);
+	
+	my $data = $self->_data();
 
 	# Delete megawidget options so that we can safely pass the remaining
 	# ones through to the scrolled subwidget.
-	$self->_data->{-tile}       = delete $opt{-tile};
-	$self->_data->{-scrollbars} = delete $opt{-scrollbars};
+	$data->{-tile}       = delete $opt{-tile};
+	$data->{-scrollbars} = delete $opt{-scrollbars};
 
 	# Validate requested scrollbar positions.
-	unless ($self->_data->{-scrollbars} =~ $valid_scrollbar_position) {
+	if ($data->{-scrollbars} =~ $valid_scrollbar_position) {
+		$data->{xscrollbar}{optional} = ($data->{-scrollbars} =~ /o[ns]/);
+		$data->{yscrollbar}{optional} = ($data->{-scrollbars} =~ /o[ew]/);
+	}
+	else {
 		croak("Invalid value for option '-scrollbars', must be n, s, e, w or a combination");
 	}
 
@@ -87,8 +93,8 @@ sub _Populate {
 	# Tcl pathname of the delegate for use by the scrollbars.
 	$x->configure(-command        => [$w->_mpath('xview'), 'xview']);
 	$y->configure(-command        => [$w->_mpath('yview'), 'yview']);
-	$w->configure(-xscrollcommand => [$x, 'set']);
-	$w->configure(-yscrollcommand => [$y, 'set']);
+	$w->configure(-xscrollcommand => [\&_set, $self, 'xscrollbar']);
+	$w->configure(-yscrollcommand => [\&_set, $self, 'yscrollbar']);
 
 	# Determine the placement of the scrollbars. The corner between the
 	# scrollbars is left empty; this keeps the ends of the scrollbars from
@@ -135,6 +141,29 @@ sub _scrollbar {
 }
 
 
+#-------------------------------------------------------------------------------
+# Method  : _set
+# Purpose : Set a scrollbar, possibly hiding/showing it if it's optional
+# Notes   : $self is the third argument due to oddities with the Tcl bridge
+#-------------------------------------------------------------------------------
+sub _set {
+	my ($first, $last, $self, $kid) = @_;
+	my $sb  = $self->_kid($kid);
+	my $cfg = $self->_data()->{$kid};
+
+	$sb->set($first, $last);	
+	
+	if ($cfg->{optional}) {
+		if ($first eq '0' && $last eq '1') {
+			Tkx::grid('remove', $sb)
+		}
+		else {
+			$sb->g_grid();
+		}
+	}
+}
+
+
 1;
 
 __END__
@@ -164,7 +193,9 @@ passed through to the constructor for the scrolled subwidget.
 =head2 -scrollbars
 
 Where the scrollbars should be drawn relative to the scrolled widget: 
-C<n>, C<s>, C<e>, C<w> or a combination of them. The default value is C<se>.
+C<n>, C<s>, C<e>, C<w> or a combination of them. If a position is prefixed with
+C<o> the corresponding scrollbar is optional and will only be drawn if needed.
+The default value is C<se>.
 
 =head2 -tile
 
