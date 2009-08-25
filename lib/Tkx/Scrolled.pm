@@ -11,7 +11,7 @@ use Carp qw(croak);
 use Tkx;
 use base qw(Tkx::widget Tkx::MegaConfig);
 
-our $VERSION = '0.03';
+our $VERSION = '0.04';
 
 __PACKAGE__->_Mega('tkx_Scrolled');
 
@@ -115,6 +115,9 @@ sub _Populate {
 	Tkx::grid('columnconfigure', $self, 1, '-weight', 1);
 	Tkx::grid('rowconfigure',    $self, 1, '-weight', 1);
 
+	Tkx::grid('remove', $x) if $data->{xscrollbar}{optional};
+	Tkx::grid('remove', $y) if $data->{yscrollbar}{optional};
+
 	return $self;
 }
 
@@ -144,22 +147,39 @@ sub _scrollbar {
 #-------------------------------------------------------------------------------
 # Method  : _set
 # Purpose : Set a scrollbar, possibly hiding/showing it if it's optional
-# Notes   : $self is the third argument due to oddities with the Tcl bridge
+# Notes   :
+#    * $self is the *third* argument due to the way the Tcl bridge works.
+#    * There is a (literal) corner case that can cause optional scrollbars to 
+#      flicker when:
+#         1) A line of text is at the bottom of the scrolled area.
+#         2) The line is the only one long enough to require scrolling.
+#         3) Drawing the horizontal scrollbar hides the line (making
+#            scrolling unnecessary).
+#      Tk doesn't provide a good mechanism for detecting this and handling it
+#      robustly. Instead we kludge it it by briefly inhibiting removal of a
+#      scrollbar after drawing it.
 #-------------------------------------------------------------------------------
 sub _set {
 	my ($first, $last, $self, $kid) = @_;
 	my $sb  = $self->_kid($kid);
 	my $cfg = $self->_data()->{$kid};
 
-	$sb->set($first, $last);	
-	
-	if ($cfg->{optional}) {
-		if ($first eq '0' && $last eq '1') {
-			Tkx::grid('remove', $sb)
-		}
-		else {
-			$sb->g_grid();
-		}
+	$sb->set($first, $last);
+
+	return unless $cfg->{optional};
+
+	if ($first > 0 || $last < 1) {
+		return if Tkx::grid('info', $sb);  # Already visible
+		$sb->g_grid();                     # Make visible
+
+		# inhibit immediate removal
+		$cfg->{inhibit} = 1;
+		Tkx::after(10, sub { $cfg->{inhibit} = 0 });
+	}
+	else {
+		return unless Tkx::grid('info', $sb);  # Already hidden
+		return if     $cfg->{inhibit};         # Can't hide yet
+		Tkx::grid('remove', $sb);              # Hide scrollbar
 	}
 }
 

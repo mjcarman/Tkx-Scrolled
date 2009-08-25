@@ -1,5 +1,8 @@
 Revision history for Tkx-Scrolled
 
+0.04  (2009-08-25)
+    - Kludge to prevent optional scrollbars from flickering in corner case.
+
 0.03  (2009-08-24)
     - Added support for optional scrollbars
 
