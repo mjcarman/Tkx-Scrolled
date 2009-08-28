@@ -11,7 +11,7 @@ use Carp qw(croak);
 use Tkx;
 use base qw(Tkx::widget Tkx::MegaConfig);
 
-our $VERSION = '0.04';
+our $VERSION = '0.05';
 
 __PACKAGE__->_Mega('tkx_Scrolled');
 
@@ -68,7 +68,7 @@ sub _Populate {
 
 	# Delete megawidget options so that we can safely pass the remaining
 	# ones through to the scrolled subwidget.
-	$data->{-tile}       = delete $opt{-tile};
+	$data->{-tile}       = delete $opt{-tile} && $tile_available;
 	$data->{-scrollbars} = delete $opt{-scrollbars};
 
 	# Validate requested scrollbar positions.
