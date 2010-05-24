@@ -6,7 +6,12 @@ use Tkx;
 use Tkx::Scrolled;
 
 my $mw = Tkx::widget->new('.');
-my $w  = $mw->new_tkx_Scrolled('text');
+my $w  = $mw->new_tkx_Scrolled('text',
+	-width  => 5,
+	-height => 5,
+	-wrap   => 'none',
+);
+$w->g_pack();
 
 $mw->g_wm_withdraw();  # hide the mainwindow
 
