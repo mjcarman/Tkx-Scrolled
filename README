@@ -48,8 +48,10 @@ You can also look for information at:
 
 COPYRIGHT AND LICENCE
 
-Copyright (C) 2009 Michael J. Carman
+Copyright (C) 2009-2010 Michael J. Carman
 
 This program is free software; you can redistribute it and/or modify it
-under the same terms as Perl itself.
+under the terms of either: the GNU General Public License as published
+by the Free Software Foundation; or the Artistic License.
 
+See http://dev.perl.org/licenses/ for more information.
