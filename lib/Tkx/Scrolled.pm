@@ -1,9 +1,9 @@
 #===============================================================================
 # Tkx/Scrolled.pm
-# Copyright 2009 Michael J. Carman. All rights reserved.
+# Copyright 2009-2010 Michael J. Carman. All rights reserved.
 #===============================================================================
 package Tkx::Scrolled;
-BEGIN {require 5.006}
+use 5.006;
 use strict;
 use warnings;
 
@@ -11,7 +11,7 @@ use Carp qw(croak);
 use Tkx;
 use base qw(Tkx::widget Tkx::MegaConfig);
 
-our $VERSION = '0.05';
+our $VERSION = '0.06';
 
 __PACKAGE__->_Mega('tkx_Scrolled');
 
@@ -256,6 +256,7 @@ Please report any bugs or feature requests to C<bug-tkx-scrolled at
 rt.cpan.org>, or through the web interface at 
 L<http://rt.cpan.org/NoAuth/ReportBug.html?Queue=Tkx-Scrolled>.  I will be 
 notified, and then you'll automatically be notified of progress on your bug as I 
+
 make changes.
 
 =head1 SUPPORT
@@ -290,9 +291,12 @@ L<http://search.cpan.org/dist/Tkx-Scrolled>
 
 =head1 COPYRIGHT & LICENSE
 
-Copyright 2009 Michael J. Carman, all rights reserved.
+Copyright 2009-2010 Michael J. Carman, all rights reserved.
 
 This program is free software; you can redistribute it and/or modify it
-under the same terms as Perl itself.
+under the terms of either: the GNU General Public License as published
+by the Free Software Foundation; or the Artistic License.
+
+See http://dev.perl.org/licenses/ for more information.
 
 =cut
